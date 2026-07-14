@@ -10,7 +10,7 @@ Install the same core folder under `~/.claude/skills/` or `.claude/skills/`. Inv
 
 ## Tencent WorkBuddy
 
-Use WorkBuddy's Skills page to add and import the local Skill package. If the current build does not accept the ZIP, import the unpacked folder or use `assets/workbuddy-create-skill-prompt.md` to create a platform wrapper that points at the portable scripts and Remotion template. Do not confuse WorkBuddy installation with CodeBuddy IDE/CLI's `.codebuddy/skills/` paths. Configure an image MCP, an image API, or existing separated image assets before running the workflow.
+Use WorkBuddy's Skills page to add and import the local Skill package. If the current build does not accept the ZIP, import the unpacked folder or use `assets/workbuddy-create-skill-prompt.md` to create a platform wrapper that points at the portable scripts and Remotion template. Do not confuse WorkBuddy installation with CodeBuddy IDE/CLI's `.codebuddy/skills/` paths. Configure an image MCP, an image API, or existing strategy-compliant assets before running the workflow: separated images for `layered`, or original/licensed text-free plates for `scene-illustrations`.
 
 ## Other agents
 
@@ -21,3 +21,5 @@ Copy the procedural content and scripts only when the host can read local resour
 - speech generation: provider adapter
 - rendering: Remotion and Chrome
 - encoding and QA: FFmpeg and ffprobe
+
+Book research services, VoxCPM, faster-whisper, and HyperFrames are optional adapters. Do not describe them as installed or required until the current host exposes and validates them. The bundled default renderer remains Remotion.

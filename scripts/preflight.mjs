@@ -32,6 +32,13 @@ const pillow = commands.python
     })()
   : false;
 
+const pythonModule = (module) => commands.python
+  ? (() => {
+      const result = spawnSync(commands.python, ['-c', `import ${module}`], {encoding: 'utf8'});
+      return !result.error && result.status === 0;
+    })()
+  : false;
+
 const configPath = value('--config');
 let config = {};
 if (configPath) {
@@ -43,21 +50,41 @@ if (configPath) {
 }
 
 const errors = [];
-for (const required of ['node', 'npm', 'ffmpeg', 'ffprobe', 'python']) {
+for (const required of ['node', 'npm', 'ffmpeg', 'ffprobe']) {
   if (!commands[required]) errors.push(`Missing required command: ${required}`);
 }
-if (commands.python && !pillow) errors.push('Python Pillow is required. Install it in the active environment.');
 
+const contentMode = config.contentMode ?? 'explainer';
+const assetStrategy = config.assetStrategy ?? 'layered';
 const imageProvider = config.image?.provider ?? 'codex-native';
 const voiceProvider = config.voice?.provider ?? 'edge-tts';
+const timingProvider = config.timing?.provider ?? 'manual';
+const rendererProvider = config.renderer?.provider ?? 'remotion';
 const imageProviders = new Set(['codex-native', 'openai-api', 'mcp', 'file']);
 const voiceProviders = new Set(['edge-tts', 'openai', 'file']);
+const timingProviders = new Set(['manual', 'faster-whisper']);
 
+if (!['explainer', 'book-review'].includes(contentMode)) errors.push(`Unsupported contentMode: ${contentMode}.`);
+if (!['layered', 'scene-illustrations'].includes(assetStrategy)) errors.push(`Unsupported assetStrategy: ${assetStrategy}.`);
+if (contentMode === 'explainer' && assetStrategy !== 'layered') errors.push('explainer requires assetStrategy=layered in this release.');
+if (contentMode === 'book-review' && assetStrategy !== 'scene-illustrations') errors.push('book-review requires assetStrategy=scene-illustrations in this release.');
 if (!imageProviders.has(imageProvider)) {
   errors.push(`Unsupported image provider: ${imageProvider}. Choose codex-native, openai-api, mcp, or file.`);
 }
 if (!voiceProviders.has(voiceProvider)) {
   errors.push(`Unsupported voice provider: ${voiceProvider}. Choose edge-tts, openai, or file.`);
+}
+if (!timingProviders.has(timingProvider)) {
+  errors.push(`Unsupported timing provider: ${timingProvider}. Choose manual or faster-whisper.`);
+}
+if (rendererProvider !== 'remotion') {
+  errors.push(`Unsupported renderer provider in this release: ${rendererProvider}. Choose remotion.`);
+}
+if ((assetStrategy === 'layered' || timingProvider === 'faster-whisper') && !commands.python) {
+  errors.push('Python is required for layered alpha processing or faster-whisper timing.');
+}
+if (assetStrategy === 'layered' && commands.python && !pillow) {
+  errors.push('Python Pillow is required for layered chroma removal and alpha validation.');
 }
 
 if (imageProvider === 'openai-api' && !process.env.OPENAI_API_KEY) {
@@ -69,20 +96,29 @@ if (voiceProvider === 'openai' && !process.env.OPENAI_API_KEY) {
 if (voiceProvider === 'edge-tts' && !commands.edgeTts) {
   errors.push('Voice provider edge-tts requires the edge-tts executable.');
 }
+const fasterWhisper = timingProvider === 'faster-whisper' ? pythonModule('faster_whisper') : null;
+if (timingProvider === 'faster-whisper' && !fasterWhisper) {
+  errors.push('Timing provider faster-whisper requires the Python faster_whisper package. Choose manual to supply approved timings without ASR.');
+}
 
 const report = {
   ok: errors.length === 0,
   commands,
   pillow,
+  contentMode,
+  assetStrategy,
   imageProvider,
   voiceProvider,
+  timingProvider,
+  rendererProvider,
+  fasterWhisper,
   agentChecks:
     imageProvider === 'codex-native'
       ? ['Confirm that a native raster image-generation tool is callable in this agent session.']
       : imageProvider === 'mcp'
         ? ['Inspect and confirm the configured image MCP tool schema before generation.']
         : imageProvider === 'file'
-          ? ['Confirm that every input is authorized and already separated according to the layer contract.']
+          ? [`Confirm that every input is authorized and satisfies assetStrategy=${assetStrategy}.`]
           : [],
   errors,
 };

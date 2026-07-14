@@ -10,7 +10,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type {CaptionStyle, IllustrationLayer, Project, Scene} from './types';
+import type {CaptionCue, CaptionStyle, IllustrationLayer, Project, Scene} from './types';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
@@ -163,12 +163,13 @@ const Layer: React.FC<{layer: IllustrationLayer}> = ({layer}) => {
   );
 };
 
-const Caption: React.FC<{text: string; styleName: CaptionStyle; project: Project}> = ({text, styleName, project}) => {
+const Caption: React.FC<{text: string; styleName: CaptionStyle; project: Project; zIndex?: number}> = ({text, styleName, project, zIndex = 45}) => {
+  const safeBottom = project.captionSafeBottom ?? (project.contentMode === 'book-review' ? Math.round(project.height * 0.095) : null);
   if (styleName === 'card') {
     return (
       <div
         style={{
-          position: 'absolute', zIndex: 45, left: 70, right: 70, bottom: 88, color: '#FFF9E9',
+          position: 'absolute', zIndex, left: 70, right: 70, bottom: safeBottom ?? 88, color: '#FFF9E9',
           background: 'rgba(31,35,29,.9)', border: `3px solid ${project.palette.paper}`, borderRadius: 24,
           padding: '20px 30px 23px', fontSize: 40, lineHeight: 1.34, fontWeight: 800, textAlign: 'center',
         }}
@@ -181,7 +182,7 @@ const Caption: React.FC<{text: string; styleName: CaptionStyle; project: Project
     return (
       <div
         style={{
-          position: 'absolute', zIndex: 45, left: 80, right: 80, bottom: 76, color: '#FFFDF4',
+          position: 'absolute', zIndex, left: 80, right: 80, bottom: safeBottom ?? 76, color: '#FFFDF4',
           fontSize: 38, lineHeight: 1.34, fontWeight: 850, textAlign: 'center',
           textShadow: '0 3px 2px #171713, 2px 0 1px #171713, -2px 0 1px #171713',
         }}
@@ -193,13 +194,60 @@ const Caption: React.FC<{text: string; styleName: CaptionStyle; project: Project
   return (
     <div
       style={{
-        position: 'absolute', zIndex: 45, left: 0, right: 0, bottom: 62, color: '#FFFDF4',
+        position: 'absolute', zIndex, left: 0, right: 0, bottom: safeBottom ?? 62, color: '#FFFDF4',
         padding: '16px 72px 19px', background: 'linear-gradient(90deg, transparent 0%, rgba(20,19,16,.72) 12%, rgba(20,19,16,.72) 88%, transparent 100%)',
         fontSize: 40, lineHeight: 1.34, fontWeight: 850, textAlign: 'center',
         textShadow: '0 3px 2px #171713, 2px 0 1px #171713, -2px 0 1px #171713',
       }}
     >
       {text}
+    </div>
+  );
+};
+
+const BookMeta: React.FC<{project: Project}> = ({project}) => {
+  const book = project.book;
+  if (!book) return null;
+  return (
+    <div
+      style={{
+        position: 'absolute', zIndex: 38, left: 68, right: 68, top: 105,
+        color: project.palette.ink, transform: 'rotate(-0.35deg)',
+      }}
+    >
+      <div
+        style={{
+          display: 'inline-flex', color: project.palette.paper, background: project.palette.accent,
+          padding: '9px 20px 11px', border: `2px solid ${project.palette.paper}`,
+          boxShadow: `5px 6px 0 ${project.palette.ink}`, fontSize: 27, fontWeight: 900,
+          letterSpacing: 5,
+        }}
+      >
+        {book.label ?? 'BOOK NOTES'}
+      </div>
+      <div
+        style={{
+          marginTop: 22, maxWidth: 900, color: project.palette.ink, fontSize: 83,
+          lineHeight: 1.05, fontWeight: 950, letterSpacing: -4, whiteSpace: 'pre-line',
+          textShadow: `4px 4px 0 ${project.palette.paper}, 7px 8px 0 rgba(32,37,30,.16)`,
+        }}
+      >
+        {book.title}
+      </div>
+      {book.originalTitle ? (
+        <div style={{marginTop: 13, maxWidth: 850, fontSize: 25, lineHeight: 1.25, fontWeight: 650, opacity: 0.72}}>
+          {book.originalTitle}
+        </div>
+      ) : null}
+      <div
+        style={{
+          marginTop: 17, display: 'inline-block', color: project.palette.paper,
+          background: 'rgba(28,31,26,.86)', padding: '9px 17px 11px',
+          borderRadius: 5, fontSize: 29, lineHeight: 1.2, fontWeight: 800,
+        }}
+      >
+        {book.author}
+      </div>
     </div>
   );
 };
@@ -230,7 +278,9 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
   const frame = useCurrentFrame();
   const camera = scene.camera ?? {};
   const fadeIn = scene.transition === 'cut' || scene.transition === 'paper-wipe' ? 1 : interpolate(frame, [0, 9], [0, 1], clamp);
-  const fadeOut = interpolate(frame, [Math.max(0, scene.duration - 9), scene.duration], [1, 0], clamp);
+  const fadeOut = project.contentMode === 'book-review'
+    ? 1
+    : interpolate(frame, [Math.max(0, scene.duration - 9), scene.duration], [1, 0], clamp);
   const sceneOpacity = Math.min(fadeIn, fadeOut);
   const scale = interpolate(frame, [0, scene.duration], [camera.scaleFrom ?? 1.01, camera.scaleTo ?? 1.045], clamp);
   const cameraX = interpolate(frame, [0, scene.duration], [camera.xFrom ?? 0, camera.xTo ?? 0], clamp);
@@ -246,19 +296,24 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
       <AbsoluteFill style={{transform: `translate(${cameraX}px, ${cameraY}px) scale(${scale})`}}>
         <Img
           src={staticFile(scene.background)}
-          style={{position: 'absolute', inset: -32, width: 'calc(100% + 64px)', height: 'calc(100% + 64px)', objectFit: 'cover'}}
+          style={{
+            position: 'absolute', inset: -32, width: 'calc(100% + 64px)', height: 'calc(100% + 64px)',
+            objectFit: 'cover', objectPosition: scene.backgroundPosition ?? 'center center',
+          }}
         />
       </AbsoluteFill>
       {scene.tint ? <AbsoluteFill style={{background: scene.tint, mixBlendMode: 'multiply', opacity: 0.26}} /> : null}
       {isPaperCut ? <PaperTexture /> : null}
-      {scene.layers.map((layer) => <Layer key={layer.id} layer={layer} />)}
-      {scene.layers.map((layer) => layer.sfx ? (
+      {(scene.layers ?? []).map((layer) => <Layer key={layer.id} layer={layer} />)}
+      {(scene.layers ?? []).map((layer) => layer.sfx ? (
         <Sequence key={`${layer.id}-sfx`} from={layer.delay ?? 0}>
           <Audio src={staticFile(layer.sfx)} volume={layer.sfxVolume ?? 0.2} />
         </Sequence>
       ) : null)}
       {scene.transitionSfx ? <Audio src={staticFile(scene.transitionSfx)} volume={scene.transitionSfxVolume ?? 0.18} /> : null}
       {isPaperCut ? <CollageDecoration project={project} scene={scene} /> : null}
+
+      {project.contentMode === 'book-review' && scene.showBookMeta ? <BookMeta project={project} /> : null}
 
       <div
         style={{
@@ -295,11 +350,17 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
         ) : null}
       </div>
 
-      {scene.caption ? <Caption text={scene.caption} styleName={scene.captionStyle ?? 'strip'} project={project} /> : null}
+      {!project.captions?.length && scene.caption ? (
+        <Caption text={scene.caption} styleName={scene.captionStyle ?? 'strip'} project={project} />
+      ) : null}
       <TransitionOverlay scene={scene} project={project} />
     </AbsoluteFill>
   );
 };
+
+const TimedCaption: React.FC<{cue: CaptionCue; project: Project}> = ({cue, project}) => (
+  <Caption text={cue.text} styleName={cue.style ?? 'minimal'} project={project} zIndex={90} />
+);
 
 const Brand: React.FC<{project: Project}> = ({project}) => {
   const brand = project.brand;
@@ -332,6 +393,11 @@ export const IllustratedVideo: React.FC<{project: Project}> = ({project}) => (
     {project.scenes.map((scene) => (
       <Sequence key={scene.id} from={scene.from} durationInFrames={scene.duration} premountFor={30}>
         <SceneCard scene={scene} project={project} />
+      </Sequence>
+    ))}
+    {(project.captions ?? []).map((cue) => (
+      <Sequence key={cue.id} from={cue.from} durationInFrames={cue.duration} premountFor={5}>
+        <TimedCaption cue={cue} project={project} />
       </Sequence>
     ))}
     <Brand project={project} />

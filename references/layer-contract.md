@@ -1,5 +1,7 @@
 # Layer contract
 
+This contract applies only to `contentMode: "explainer"` with `assetStrategy: "layered"`. For `book-review` scene plates, use [book-review-workflow.md](book-review-workflow.md).
+
 ## Scene minimum
 
 Each hero scene must contain:
