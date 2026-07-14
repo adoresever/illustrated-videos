@@ -1,0 +1,22 @@
+{
+  "name": "illustrated-video-project",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts IllustratedVideo out/final.mp4 --codec=h264 --audio-codec=aac --pixel-format=yuv420p --crf=18 --concurrency=2",
+    "still": "remotion still src/index.ts IllustratedVideo out/poster.png --frame=30"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.489",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.489"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

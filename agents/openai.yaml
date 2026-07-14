@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illustrated Videos"
+  short_description: "把任意主题变成可验证的分层插画科普短视频与可编辑工程"
+  default_prompt: "Use $illustrated-videos to create a layered 30-second illustrated explainer video from my topic with the verified paper-cut preset and no account watermark."

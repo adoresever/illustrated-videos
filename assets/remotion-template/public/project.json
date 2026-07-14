@@ -1,0 +1,26 @@
+{
+  "title": "插画科普视频",
+  "stylePreset": "paper-cut",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "durationInFrames": 180,
+  "palette": {
+    "paper": "#F3EBD8",
+    "ink": "#20251E",
+    "accent": "#A9362B",
+    "gold": "#C49649"
+  },
+  "brand": {
+    "handle": "",
+    "show": false,
+    "placement": "top-right"
+  },
+  "audio": {
+    "voice": null,
+    "music": null,
+    "musicVolume": 0.1,
+    "intentionalSilence": false
+  },
+  "scenes": []
+}

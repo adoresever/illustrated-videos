@@ -1,0 +1,42 @@
+{
+  "project": {
+    "topic": "<replace-with-topic>",
+    "audience": "<replace-with-audience>",
+    "lessonObjective": "<replace-with-one-sentence-objective>",
+    "language": "zh-CN",
+    "durationSeconds": 30,
+    "aspectRatio": "9:16"
+  },
+  "visualSystem": {
+    "preset": "paper-cut",
+    "medium": "<replace-with-original-visual-medium>",
+    "lineTreatment": "<replace-with-line-and-edge-treatment>",
+    "palette": ["<replace-with-color-1>", "<replace-with-color-2>", "<replace-with-color-3>"],
+    "texture": "<replace-with-material-and-surface-texture>",
+    "lighting": "<replace-with-lighting-rule>",
+    "depth": "layered collage with clear foreground, middle ground, and background separation",
+    "referenceQualities": ["<replace-with-high-level-transferable-quality>"],
+    "avoid": ["photorealistic look", "3D render", "generated text", "watermark"]
+  },
+  "brand": {
+    "handle": "",
+    "show": false,
+    "placement": "top-right"
+  },
+  "providers": {
+    "image": {"provider": "codex-native", "model": null},
+    "voice": {"provider": "edge-tts", "voice": "zh-CN-XiaoxiaoNeural", "model": null}
+  },
+  "quality": {
+    "minHeroLayers": 5,
+    "minDistinctCompositions": 2,
+    "publishScore": 88
+  },
+  "evidence": {
+    "claims": [],
+    "sources": [],
+    "uncertainties": [],
+    "disclaimer": null
+  },
+  "assets": []
+}

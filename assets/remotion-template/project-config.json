@@ -1,0 +1,15 @@
+{
+  "image": {
+    "provider": "codex-native",
+    "model": null
+  },
+  "voice": {
+    "provider": "edge-tts",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "model": null
+  },
+  "brand": {
+    "handle": "",
+    "show": false
+  }
+}
