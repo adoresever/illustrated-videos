@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "contentMode": "book-review",
+  "book": {
+    "title": "<replace-with-confirmed-title>",
+    "originalTitle": "<replace-with-original-title-or-remove>",
+    "author": "<replace-with-confirmed-author>",
+    "language": "<replace-with-original-language-or-remove>",
+    "firstPublicationYear": null,
+    "edition": "<replace-with-edition-or-remove>",
+    "translator": "<replace-with-translator-or-remove>"
+  },
+  "editorial": {
+    "audience": "<replace-with-intended-viewer>",
+    "angle": "<replace-with-one-question-or-argument>",
+    "promise": "<replace-with-what-the-viewer-will-understand>",
+    "spoilerLevel": "low",
+    "tone": "<replace-with-spoken-and-visual-tone>"
+  },
+  "facts": [],
+  "interpretations": [],
+  "guardrails": {
+    "quotePolicy": "original-commentary-only",
+    "visualPolicy": {
+      "noCoverReplication": true,
+      "noAdaptationFramesOrLikenesses": true,
+      "noGeneratedTypography": true,
+      "noEditionStyleImitation": true
+    },
+    "plotDetailsToAvoid": [],
+    "commonOversimplifications": [],
+    "visualExclusions": [
+      "book-cover replicas",
+      "film stills or actor likenesses",
+      "generated typography",
+      "recognizable illustrated-edition compositions"
+    ]
+  },
+  "sources": []
+}

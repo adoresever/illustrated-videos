@@ -1,4 +1,6 @@
 {
+  "contentMode": "explainer",
+  "assetStrategy": "layered",
   "image": {
     "provider": "codex-native",
     "model": null
@@ -7,6 +9,13 @@
     "provider": "edge-tts",
     "voice": "zh-CN-XiaoxiaoNeural",
     "model": null
+  },
+  "timing": {
+    "provider": "manual",
+    "model": "small"
+  },
+  "renderer": {
+    "provider": "remotion"
   },
   "brand": {
     "handle": "",

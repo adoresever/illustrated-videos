@@ -1,10 +1,10 @@
 # Style presets
 
-`illustrated-videos` is the umbrella Skill name. A preset is more than a style word in an image prompt: it needs an asset contract, prompt rules, compositing behavior, animation grammar, examples, and regression checks.
+`illustrated-videos` is the umbrella Skill name. A preset is more than a style word in an image prompt: it needs an asset contract, prompt rules, compositing behavior, animation grammar, examples, and regression checks. The content mode selects the editorial workflow, while the asset strategy selects `layered` or `scene-illustrations`; neither is a new visual preset.
 
 | Preset | 中文 | Status | Required renderer behavior |
 |---|---|---|---|
-| `paper-cut` | 剪纸 / 纸片拼贴 | Verified in v1 | Alpha cutouts, visible paper edges, role-based shadows, parallax, collage decoration, paper wipe |
+| `paper-cut` | 剪纸 / 纸片拼贴 | Verified in v1 | `layered`: alpha cutouts, role shadows and parallax; `scene-illustrations`: consistent paper collage plates, restrained plate motion and code typography; both keep visible paper edges and paper-aware transitions |
 | `crayon` | 儿童蜡笔 | Roadmap | Crayon texture consistency, partial draw-on reveal, restrained childlike motion |
 | `doodle` | 极简涂鸦 | Roadmap | Line drawing reveal, icon-like staging, minimal fills |
 | `pencil-sketch` | 铅笔速写 | Roadmap | Stroke build-up, graphite texture, eraser or page transitions |

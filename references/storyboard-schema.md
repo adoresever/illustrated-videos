@@ -5,11 +5,14 @@ The Remotion template reads `public/project.json`. Values below demonstrate stru
 ```json
 {
   "title": "<project-title>",
+  "contentMode": "explainer",
+  "assetStrategy": "layered",
   "stylePreset": "paper-cut",
   "width": 1080,
   "height": 1920,
   "fps": 30,
   "durationInFrames": 900,
+  "captionSafeBottom": 182,
   "palette": {
     "paper": "<paper-color>",
     "ink": "<ink-color>",
@@ -64,6 +67,8 @@ The Remotion template reads `public/project.json`. Values below demonstrate stru
 
 ## Rules
 
+- `contentMode` supports `explainer` and `book-review`.
+- `assetStrategy` is `layered` for `explainer` and `scene-illustrations` for `book-review`.
 - `stylePreset` defaults to `paper-cut`; it is the only preset verified in v1.
 - `from`, `duration`, and `delay` are frames.
 - Scene ranges should cover the composition without accidental gaps or overlaps.
@@ -78,6 +83,39 @@ The Remotion template reads `public/project.json`. Values below demonstrate stru
 - Use `camera` in addition to independent layer motion, not instead of it.
 - Optional layer fields include `label`, `opacity`, `flipX`, `bob`, `rotation`, `sfx`, and `sfxVolume`.
 
+For `book-review`, also provide `book`, global audio-aligned `captions`, and at least one scene with `showBookMeta: true`. Every scene uses one complete illustration as `background` and declares `layers: []`:
+
+```json
+{
+  "contentMode": "book-review",
+  "assetStrategy": "scene-illustrations",
+  "book": {
+    "title": "<confirmed-title>",
+    "originalTitle": "<optional-original-title>",
+    "author": "<confirmed-author>",
+    "angle": "<one-editorial-angle>",
+    "spoilerLevel": "low",
+    "label": "插画读书"
+  },
+  "captions": [
+    {"id": "caption-01", "from": 0, "duration": 120, "text": "<approved-narration-clause>"}
+  ],
+  "scenes": [
+    {
+      "id": "<semantic-beat>",
+      "from": 0,
+      "duration": 180,
+      "background": "assets/plates/<illustration>.png",
+      "showBookMeta": true,
+      "camera": {"scaleFrom": 1.01, "scaleTo": 1.05, "xFrom": 0, "xTo": -12},
+      "layers": []
+    }
+  ]
+}
+```
+
+Use the final narration audio to calculate `durationInFrames`, scene `from`/`duration`, and caption cues. Do not copy recognizer text into captions; preserve the approved narration.
+
 ## Asset manifest
 
 `public/asset-manifest.json` records provider provenance and verifies separation:
@@ -86,6 +124,8 @@ The Remotion template reads `public/project.json`. Values below demonstrate stru
 {
   "imageProvider": "<codex-native|openai-api|mcp|file>",
   "voiceProvider": "<edge-tts|openai|file>",
+  "contentMode": "explainer",
+  "assetStrategy": "layered",
   "assets": [
     {
       "id": "<plate-id>",
@@ -105,5 +145,7 @@ The Remotion template reads `public/project.json`. Values below demonstrate stru
   ]
 }
 ```
+
+For `book-review`, set manifest mode fields accordingly and use `type: "illustration"` for every complete scene plate. Every illustration must declare both `textFree: true` and `visuallyInspected: true` only after a person or vision-capable agent checks it against the research packet's visual exclusions. Illustration assets do not declare alpha and are not passed through chroma removal. Set `captionSafeBottom` in pixels for the target platform; the book scaffold defaults to 9.5% of composition height.
 
 Keep original provider outputs under `assets/source/`; never overwrite them during key removal. Keep literal prompts in `public/prompts/` and reference them from the manifest instead of duplicating long prompt strings.

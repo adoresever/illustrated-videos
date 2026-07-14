@@ -6,25 +6,38 @@ Use this rubric to compare drafts, diagnose a flat result, and decide whether to
 
 Reject the project when any of these is true:
 
-- a hero shot is one composite illustration with only camera movement
-- a required subject has no real transparent pixels
-- featured subjects are baked into the environment plate
+- a `layered` hero shot is one composite illustration with only camera movement
+- a required `layered` subject has no real transparent pixels
+- `layered` featured subjects are baked into the environment plate
+- a `scene-illustrations` project falsely declares subjects inside a unified plate as independently movable layers
 - generated image text is used as final production typography
 - facts, captions, or audio are materially wrong
 - video or audio stream is missing or the file cannot fully decode
 - a reference frame or protected character is copied rather than abstracted
 
-## 100-point review
+## 100-point review: `explainer` + `layered`
 
 | Area | Points | Passing evidence |
 |---|---:|---|
-| Narrative and pacing | 15 | Hook in first 2 seconds; one claim per beat; 4–7 beats for 20–35 seconds; no beat overstays its information |
+| Narrative and pacing | 15 | Opening earns attention; one claim per beat; final narration completes the chosen scope; no beat overstays its information |
 | Layer depth | 25 | Background is separate; hero shots normally have 5+ independently addressable layers; primary, support, and foreground/depth roles are visible |
 | Composition | 20 | Primary is dominant; scale differences are obvious; asymmetry, overlap, negative space, and baselines feel intentional; at least two distinct shot layouts |
 | Motion | 15 | Staggered entrances; role-specific distance; visible settle; camera motion remains subordinate; transitions have no flash or dead frame |
 | Typography and attribution | 10 | One title treatment and one caption system; mobile-safe; no heavy stack of cards; creator attribution is absent by default or unobtrusive when explicitly requested |
 | Audio | 10 | Voice is intelligible; captions match; music/effects support rhythm without masking voice; entries or transitions have deliberate cues |
 | Technical | 5 | Correct aspect, duration, frame rate, H.264/AAC, full decode, contact-sheet review |
+
+## 100-point review: `book-review` + `scene-illustrations`
+
+| Area | Points | Passing evidence |
+|---|---:|---|
+| Narrative and pacing | 20 | One coherent editorial angle; final narration completes it without forced compression or padding; semantic scene timing follows the final audio |
+| Research and rights | 15 | Title, author, relevant facts, spoiler policy, sources, fact/commentary boundary, and visual/quotation exclusions are recorded |
+| Illustration coverage | 20 | At least three distinct text-free plates; every scene maps to a declared plate; series style remains consistent; no false alpha-layer claims |
+| Motion | 15 | Several restrained camera trajectories; transitions have no flash or dead frame; long holds contain an intentional visual reason or are split |
+| Typography and captions | 15 | Title/author are code-rendered; approved caption text matches narration; cues do not overlap or exceed the composition |
+| Audio | 10 | Final narration exists, fits the composition, stays intelligible over optional music/effects, and drives the duration |
+| Technical | 5 | Correct aspect, positive frame rate/duration, H.264/AAC export, full decode, contact-sheet and transition review |
 
 Target at least 78/100 for a shareable draft and 88/100 for a publish candidate. Any hard failure overrides the score.
 
@@ -39,6 +52,8 @@ Likely causes:
 - insufficient scale difference or occlusion
 
 Fix the composition contract: add meaningful midground and foreground assets, vary baselines, and make role motion independent.
+
+For `scene-illustrations`, do not invent fake layer separation. Add a materially different plate at the next semantic boundary, strengthen the crop path, or add honest code-native graphic motion.
 
 ### Looks like a museum card or slide deck
 
