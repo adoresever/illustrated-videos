@@ -1,14 +1,22 @@
 {
   "project": {
+    "contentMode": "explainer",
     "topic": "<replace-with-topic>",
     "audience": "<replace-with-audience>",
     "lessonObjective": "<replace-with-one-sentence-objective>",
     "language": "zh-CN",
-    "durationSeconds": 30,
+    "durationPlan": {
+      "source": "fallback",
+      "requestedSeconds": null,
+      "planningTargetSeconds": 40,
+      "planningRangeSeconds": [35, 50],
+      "finalAudioDeterminesRuntime": true
+    },
     "aspectRatio": "9:16"
   },
   "visualSystem": {
     "preset": "paper-cut",
+    "assetStrategy": "layered",
     "medium": "<replace-with-original-visual-medium>",
     "lineTreatment": "<replace-with-line-and-edge-treatment>",
     "palette": ["<replace-with-color-1>", "<replace-with-color-2>", "<replace-with-color-3>"],
@@ -20,15 +28,20 @@
   },
   "brand": {
     "handle": "",
+    "logo": null,
     "show": false,
-    "placement": "top-right"
+    "placement": "top-right",
+    "logoWidth": 96,
+    "opacity": 0.94
   },
   "providers": {
     "image": {"provider": "codex-native", "model": null},
     "voice": {"provider": "edge-tts", "voice": "zh-CN-XiaoxiaoNeural", "model": null}
   },
   "quality": {
-    "minHeroLayers": 5,
+    "recommendedHeroLayerRange": [3, 7],
+    "requireIndependentPrimary": true,
+    "requireSemanticMotion": true,
     "minDistinctCompositions": 2,
     "publishScore": 88
   },

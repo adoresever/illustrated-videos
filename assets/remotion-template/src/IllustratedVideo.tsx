@@ -98,7 +98,7 @@ const layerFilter = (layer: IllustrationLayer) => {
   return shadowByRole[layer.role];
 };
 
-const Layer: React.FC<{layer: IllustrationLayer}> = ({layer}) => {
+const Layer: React.FC<{layer: IllustrationLayer; sceneDuration: number}> = ({layer, sceneDuration}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const motion = roleMotion[layer.role];
@@ -113,13 +113,31 @@ const Layer: React.FC<{layer: IllustrationLayer}> = ({layer}) => {
   const xOffset = direction === 'left' ? -motion.distance : direction === 'right' ? motion.distance : 0;
   const yOffset = direction === 'up' ? -motion.distance : direction === 'down' ? motion.distance : 0;
   const entranceScale = direction === 'scale' ? interpolate(progress, [0, 1], [0.48, 1], clamp) : 1;
-  const bob = (layer.bob ?? motion.drift) * Math.sin((frame + delay * 1.7) / 17);
-  const parallax = layer.role === 'foreground' ? Math.sin(frame / 24) * 11 : Math.sin(frame / 43) * motion.drift * 0.35;
-  const x = layer.x + interpolate(progress, [0, 1], [xOffset, 0], clamp) + parallax;
-  const y = layer.y + interpolate(progress, [0, 1], [yOffset, 0], clamp) + bob;
-  const scale = (layer.scale ?? 1) * entranceScale;
-  const opacity = interpolate(progress, [0, 0.14, 1], [0, layer.opacity ?? 1, layer.opacity ?? 1], clamp);
+  const keyframes = layer.motion?.keyframes ?? [];
+  const sceneProgress = Math.max(0, Math.min(1, frame / Math.max(1, sceneDuration - 1)));
+  const keyframed = (field: 'x' | 'y' | 'rotation' | 'scale' | 'opacity', fallback: number) => keyframes.length >= 2
+    ? interpolate(
+        sceneProgress,
+        keyframes.map((keyframe) => keyframe.at),
+        keyframes.map((keyframe) => keyframe[field] ?? fallback),
+        clamp,
+      )
+    : fallback;
+  const legacyMotion = layer.motion == null;
+  const loop = layer.motion?.loop ?? (legacyMotion ? 'bob' : 'none');
+  const bob = loop === 'bob' ? (layer.bob ?? motion.drift) * Math.sin((frame + delay * 1.7) / 17) : 0;
+  const parallax = legacyMotion
+    ? layer.role === 'foreground' ? Math.sin(frame / 24) * 11 : Math.sin(frame / 43) * motion.drift * 0.35
+    : 0;
+  const sway = loop === 'sway' ? Math.sin((frame + delay) / 19) * 2.4 : 0;
+  const pulse = loop === 'pulse' ? 1 + Math.sin((frame + delay) / 16) * 0.025 : 1;
+  const x = layer.x + interpolate(progress, [0, 1], [xOffset, 0], clamp) + parallax + keyframed('x', 0);
+  const y = layer.y + interpolate(progress, [0, 1], [yOffset, 0], clamp) + bob + keyframed('y', 0);
+  const scale = (layer.scale ?? 1) * entranceScale * keyframed('scale', 1) * pulse;
+  const entranceOpacity = interpolate(progress, [0, 0.14, 1], [0, 1, 1], clamp);
+  const opacity = entranceOpacity * keyframed('opacity', layer.opacity ?? 1);
   const settleRotation = (1 - progress) * (direction === 'left' ? -7 : direction === 'right' ? 7 : 0);
+  const semanticRotation = keyframed('rotation', 0);
 
   return (
     <div
@@ -131,7 +149,7 @@ const Layer: React.FC<{layer: IllustrationLayer}> = ({layer}) => {
         width: layer.width,
         height: layer.height,
         opacity,
-        transform: `rotate(${(layer.rotation ?? 0) + settleRotation}deg) scaleX(${layer.flipX ? -scale : scale}) scaleY(${scale})`,
+        transform: `rotate(${(layer.rotation ?? 0) + settleRotation + semanticRotation + sway}deg) scaleX(${layer.flipX ? -scale : scale}) scaleY(${scale})`,
         transformOrigin: '50% 80%',
         filter: layerFilter(layer),
       }}
@@ -164,7 +182,7 @@ const Layer: React.FC<{layer: IllustrationLayer}> = ({layer}) => {
 };
 
 const Caption: React.FC<{text: string; styleName: CaptionStyle; project: Project; zIndex?: number}> = ({text, styleName, project, zIndex = 45}) => {
-  const safeBottom = project.captionSafeBottom ?? (project.contentMode === 'book-review' ? Math.round(project.height * 0.095) : null);
+  const safeBottom = project.captionSafeBottom ?? (project.contentMode === 'book' ? Math.round(project.height * 0.095) : null);
   if (styleName === 'card') {
     return (
       <div
@@ -223,7 +241,7 @@ const BookMeta: React.FC<{project: Project}> = ({project}) => {
           letterSpacing: 5,
         }}
       >
-        {book.label ?? 'BOOK NOTES'}
+        {book.label ?? 'ILLUSTRATED BOOK'}
       </div>
       <div
         style={{
@@ -235,7 +253,13 @@ const BookMeta: React.FC<{project: Project}> = ({project}) => {
         {book.title}
       </div>
       {book.originalTitle ? (
-        <div style={{marginTop: 13, maxWidth: 850, fontSize: 25, lineHeight: 1.25, fontWeight: 650, opacity: 0.72}}>
+        <div
+          style={{
+            marginTop: 13, display: 'table', maxWidth: 850, color: project.palette.paper,
+            background: 'rgba(11,31,42,.82)', padding: '7px 13px 8px', borderRadius: 4,
+            fontSize: 25, lineHeight: 1.25, fontWeight: 650,
+          }}
+        >
           {book.originalTitle}
         </div>
       ) : null}
@@ -278,7 +302,7 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
   const frame = useCurrentFrame();
   const camera = scene.camera ?? {};
   const fadeIn = scene.transition === 'cut' || scene.transition === 'paper-wipe' ? 1 : interpolate(frame, [0, 9], [0, 1], clamp);
-  const fadeOut = project.contentMode === 'book-review'
+  const fadeOut = project.contentMode === 'book'
     ? 1
     : interpolate(frame, [Math.max(0, scene.duration - 9), scene.duration], [1, 0], clamp);
   const sceneOpacity = Math.min(fadeIn, fadeOut);
@@ -304,7 +328,7 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
       </AbsoluteFill>
       {scene.tint ? <AbsoluteFill style={{background: scene.tint, mixBlendMode: 'multiply', opacity: 0.26}} /> : null}
       {isPaperCut ? <PaperTexture /> : null}
-      {(scene.layers ?? []).map((layer) => <Layer key={layer.id} layer={layer} />)}
+      {(scene.layers ?? []).map((layer) => <Layer key={layer.id} layer={layer} sceneDuration={scene.duration} />)}
       {(scene.layers ?? []).map((layer) => layer.sfx ? (
         <Sequence key={`${layer.id}-sfx`} from={layer.delay ?? 0}>
           <Audio src={staticFile(layer.sfx)} volume={layer.sfxVolume ?? 0.2} />
@@ -313,7 +337,7 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
       {scene.transitionSfx ? <Audio src={staticFile(scene.transitionSfx)} volume={scene.transitionSfxVolume ?? 0.18} /> : null}
       {isPaperCut ? <CollageDecoration project={project} scene={scene} /> : null}
 
-      {project.contentMode === 'book-review' && scene.showBookMeta ? <BookMeta project={project} /> : null}
+      {project.contentMode === 'book' && scene.showBookMeta ? <BookMeta project={project} /> : null}
 
       <div
         style={{
@@ -344,7 +368,13 @@ const SceneCard: React.FC<{scene: Scene; project: Project}> = ({scene, project})
           </div>
         ) : null}
         {scene.note ? (
-          <div style={{marginTop: 15, color: project.palette.ink, fontSize: 31, fontWeight: 780, lineHeight: 1.32}}>
+          <div
+            style={{
+              marginTop: 15, display: 'table', color: project.palette.ink,
+              background: 'rgba(232,214,175,.88)', padding: '7px 13px 8px', borderRadius: 4,
+              boxShadow: '3px 4px 0 rgba(11,31,42,.16)', fontSize: 31, fontWeight: 780, lineHeight: 1.32,
+            }}
+          >
             {scene.note}
           </div>
         ) : null}
@@ -364,19 +394,32 @@ const TimedCaption: React.FC<{cue: CaptionCue; project: Project}> = ({cue, proje
 
 const Brand: React.FC<{project: Project}> = ({project}) => {
   const brand = project.brand;
-  if (!brand?.show || !brand.handle) return null;
+  const handle = brand?.handle?.trim();
+  const logo = brand?.logo?.trim();
+  if (!brand?.show || (!handle && !logo)) return null;
   const placement = brand.placement ?? 'top-right';
   const vertical = placement.startsWith('top') ? {top: 74} : {bottom: 46};
   const horizontal = placement.endsWith('right') ? {right: 54} : {left: 54};
+  const hasHandle = Boolean(handle);
   return (
     <div
       style={{
-        position: 'absolute', zIndex: 100, ...vertical, ...horizontal, color: project.palette.paper,
-        background: 'rgba(27,26,22,.72)', border: `2px solid ${project.palette.paper}`, padding: '9px 15px 10px',
+        position: 'absolute', zIndex: 100, ...vertical, ...horizontal, display: 'flex', alignItems: 'center', gap: 11,
+        color: project.palette.paper, opacity: brand.opacity ?? 0.94,
+        background: hasHandle ? 'rgba(27,26,22,.72)' : 'transparent',
+        border: hasHandle ? `2px solid ${project.palette.paper}` : 'none',
+        padding: hasHandle ? '9px 15px 10px' : 0,
         fontSize: 24, lineHeight: 1, fontWeight: 850, letterSpacing: 1.5, transform: 'rotate(1.2deg)',
+        filter: logo && !hasHandle ? 'drop-shadow(0 4px 5px rgba(20,18,14,.3))' : undefined,
       }}
     >
-      @{brand.handle.replace(/^@/, '')}
+      {logo ? (
+        <Img
+          src={staticFile(logo)}
+          style={{display: 'block', width: brand.logoWidth ?? 96, height: 'auto', objectFit: 'contain'}}
+        />
+      ) : null}
+      {handle ? <span>@{handle.replace(/^@/, '')}</span> : null}
     </div>
   );
 };

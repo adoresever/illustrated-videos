@@ -1,12 +1,63 @@
 #!/usr/bin/env node
 import {existsSync, readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
+import path from 'node:path';
 
 const args = process.argv.slice(2);
-const value = (name) => {
-  const index = args.indexOf(name);
-  return index === -1 ? undefined : args[index + 1];
+const usage = `Usage: node ${path.basename(process.argv[1])} [--config <project-config.json>] [--project-dir <dir> | <project-directory>]`;
+const parseArguments = (arguments_) => {
+  let configPath;
+  let projectDirectory;
+  for (let index = 0; index < arguments_.length; index += 1) {
+    const argument = arguments_[index];
+    if (argument === '--help' || argument === '-h') {
+      console.log(usage);
+      process.exit(0);
+    }
+    if (argument === '--config' || argument === '--project-dir') {
+      const candidate = arguments_[index + 1];
+      if (!candidate || candidate.startsWith('-')) {
+        console.error(`Missing value for ${argument}.\n${usage}`);
+        process.exit(2);
+      }
+      if (argument === '--config') {
+        if (configPath != null) {
+          console.error(`--config was provided more than once.\n${usage}`);
+          process.exit(2);
+        }
+        configPath = candidate;
+      } else {
+        if (projectDirectory != null) {
+          console.error(`Project directory was provided more than once.\n${usage}`);
+          process.exit(2);
+        }
+        projectDirectory = candidate;
+      }
+      index += 1;
+      continue;
+    }
+    if (argument.startsWith('-')) {
+      console.error(`Unknown option: ${argument}\n${usage}`);
+      process.exit(2);
+    }
+    if (projectDirectory != null) {
+      console.error(`Project directory was provided more than once.\n${usage}`);
+      process.exit(2);
+    }
+    projectDirectory = argument;
+  }
+  const resolvedProjectDirectory = projectDirectory == null ? null : path.resolve(projectDirectory);
+  return {
+    projectDirectory: resolvedProjectDirectory,
+    configPath: configPath != null
+      ? path.resolve(configPath)
+      : resolvedProjectDirectory != null
+        ? path.join(resolvedProjectDirectory, 'project-config.json')
+        : null,
+  };
 };
+
+const cli = parseArguments(args);
 
 const findCommand = (candidates, versionArgument = '--version') => {
   for (const candidate of candidates) {
@@ -39,7 +90,7 @@ const pythonModule = (module) => commands.python
     })()
   : false;
 
-const configPath = value('--config');
+const configPath = cli.configPath;
 let config = {};
 if (configPath) {
   if (!existsSync(configPath)) {
@@ -54,7 +105,8 @@ for (const required of ['node', 'npm', 'ffmpeg', 'ffprobe']) {
   if (!commands[required]) errors.push(`Missing required command: ${required}`);
 }
 
-const contentMode = config.contentMode ?? 'explainer';
+const contentMode = config.contentMode === 'book-review' ? 'book' : (config.contentMode ?? 'explainer');
+if (config.contentMode === 'book-review') errors.push('Normalize legacy input book-review to canonical contentMode=book before preflight.');
 const assetStrategy = config.assetStrategy ?? 'layered';
 const imageProvider = config.image?.provider ?? 'codex-native';
 const voiceProvider = config.voice?.provider ?? 'edge-tts';
@@ -64,10 +116,8 @@ const imageProviders = new Set(['codex-native', 'openai-api', 'mcp', 'file']);
 const voiceProviders = new Set(['edge-tts', 'openai', 'file']);
 const timingProviders = new Set(['manual', 'faster-whisper']);
 
-if (!['explainer', 'book-review'].includes(contentMode)) errors.push(`Unsupported contentMode: ${contentMode}.`);
-if (!['layered', 'scene-illustrations'].includes(assetStrategy)) errors.push(`Unsupported assetStrategy: ${assetStrategy}.`);
-if (contentMode === 'explainer' && assetStrategy !== 'layered') errors.push('explainer requires assetStrategy=layered in this release.');
-if (contentMode === 'book-review' && assetStrategy !== 'scene-illustrations') errors.push('book-review requires assetStrategy=scene-illustrations in this release.');
+if (!['explainer', 'book'].includes(contentMode)) errors.push(`Unsupported contentMode: ${contentMode}.`);
+if (assetStrategy !== 'layered') errors.push('All publishable projects require assetStrategy=layered; composite scene illustrations are rejected.');
 if (!imageProviders.has(imageProvider)) {
   errors.push(`Unsupported image provider: ${imageProvider}. Choose codex-native, openai-api, mcp, or file.`);
 }
@@ -103,6 +153,8 @@ if (timingProvider === 'faster-whisper' && !fasterWhisper) {
 
 const report = {
   ok: errors.length === 0,
+  projectDirectory: cli.projectDirectory,
+  configPath,
   commands,
   pillow,
   contentMode,

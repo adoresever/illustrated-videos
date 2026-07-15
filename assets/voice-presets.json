@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Map provider-declared voice metadata to user-facing listening choices without binding the workflow to a specific topic or title.",
+  "matching": {
+    "modeWeight": 5,
+    "modePriorityStep": 2,
+    "contentCategoryWeight": 4,
+    "personalityWeight": 3
+  },
+  "modes": {
+    "explainer": {
+      "label": "科普 / 知识讲解",
+      "preferredPresetIds": [
+        "clear-reliable",
+        "bright-friendly",
+        "warm-narrative",
+        "expressive-energy"
+      ]
+    },
+    "book": {
+      "label": "读书 / 文学叙事",
+      "preferredPresetIds": [
+        "warm-narrative",
+        "steady-reflective",
+        "bright-friendly",
+        "expressive-energy"
+      ]
+    }
+  },
+  "presets": [
+    {
+      "id": "warm-narrative",
+      "label": "温暖叙事",
+      "description": "温和、亲近，像有人在身边慢慢讲清一段故事。",
+      "bestFor": "需要情感连接，但不希望表演感过重的叙述",
+      "useCases": ["文学与人物故事", "文化主题", "温和的知识讲述"],
+      "preferredModes": ["book", "explainer"],
+      "signals": {
+        "contentCategories": ["Novel", "General"],
+        "voicePersonalities": ["Warm", "Friendly"]
+      }
+    },
+    {
+      "id": "clear-reliable",
+      "label": "清晰可信",
+      "description": "咬字清楚、节奏稳，信息重点容易听出来。",
+      "bestFor": "信息密度较高、需要建立可信感的内容",
+      "useCases": ["知识科普", "方法说明", "历史与纪实内容"],
+      "preferredModes": ["explainer"],
+      "signals": {
+        "contentCategories": ["News", "General"],
+        "voicePersonalities": ["Professional", "Reliable"]
+      }
+    },
+    {
+      "id": "bright-friendly",
+      "label": "轻快亲和",
+      "description": "听感明亮、自然，适合让开场更容易进入。",
+      "bestFor": "希望降低理解门槛、保持轻盈节奏的内容",
+      "useCases": ["大众科普", "轻松读书", "短篇故事与社交视频"],
+      "preferredModes": ["explainer", "book"],
+      "signals": {
+        "contentCategories": ["Cartoon", "Novel", "General"],
+        "voicePersonalities": ["Lively", "Sunshine", "Bright", "Positive", "Friendly"]
+      }
+    },
+    {
+      "id": "steady-reflective",
+      "label": "沉稳思考",
+      "description": "语气克制、重心稳定，给观点和留白更多空间。",
+      "bestFor": "需要思考感、余韵或较少情绪夸张的叙述",
+      "useCases": ["文学评论", "人物观察", "长叙事与观点表达"],
+      "preferredModes": ["book"],
+      "signals": {
+        "contentCategories": ["Novel", "News", "General"],
+        "voicePersonalities": ["Warm", "Reliable", "Professional"]
+      }
+    },
+    {
+      "id": "expressive-energy",
+      "label": "有张力",
+      "description": "能量更强、起伏更明显，适合强调转折和行动。",
+      "bestFor": "节奏鲜明、有冲突或需要快速抓住注意力的内容",
+      "useCases": ["事件转折", "人物行动", "节奏型知识短片"],
+      "preferredModes": ["explainer", "book"],
+      "signals": {
+        "contentCategories": ["Sports", "Novel"],
+        "voicePersonalities": ["Passion", "Energetic"]
+      }
+    }
+  ]
+}

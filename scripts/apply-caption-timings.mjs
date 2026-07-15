@@ -55,11 +55,17 @@ project.captions = aligned.cues.map((cue, index) => {
   };
 });
 project.durationInFrames = durationInFrames;
+if (!project.audio || typeof project.audio !== 'object' || Array.isArray(project.audio)) project.audio = {};
+project.audio.tailSeconds = tailSeconds;
 
 const scenes = Array.isArray(project.scenes) ? project.scenes : [];
 const allCuesHaveScene = aligned.cues.every((cue) => typeof cue.sceneId === 'string' && cue.sceneId.trim());
 let updatedScenes = false;
-if (scenes.length && allCuesHaveScene) {
+if (scenes.length && !allCuesHaveScene) {
+  console.error('Every aligned cue requires sceneId when project.scenes is non-empty; otherwise audio-derived timing cannot safely update the scene timeline.');
+  process.exit(1);
+}
+if (scenes.length) {
   const sceneIds = new Set(scenes.map((scene) => scene.id));
   const cueSceneIds = new Set(aligned.cues.map((cue) => cue.sceneId));
   const everySceneHasCue = scenes.every((scene) => cueSceneIds.has(scene.id));

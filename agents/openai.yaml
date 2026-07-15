@@ -1,4 +1,4 @@
 interface:
   display_name: "Illustrated Videos"
-  short_description: "把科普主题与图书内容变成可验证、可编辑的插画视频工程"
-  default_prompt: "Use $illustrated-videos to create an evidence-backed illustrated explainer or low-spoiler book-review video with narration-driven duration and no account watermark."
+  short_description: "把科普与书籍内容变成可验证、可编辑的分层插画视频"
+  default_prompt: "Use $illustrated-videos to create an evidence-backed layered illustrated explainer or book video. Ask once for missing approximate duration and optional voice preference, use configured fallbacks when no answer is available, let final narration determine exact timing, and locally screen raster assets for watermarks before approval."

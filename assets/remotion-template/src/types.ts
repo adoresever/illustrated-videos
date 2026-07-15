@@ -3,11 +3,28 @@ export type LayerRole = 'primary' | 'secondary' | 'tertiary' | 'foreground';
 export type CaptionStyle = 'strip' | 'card' | 'minimal';
 export type TransitionStyle = 'fade' | 'paper-wipe' | 'cut';
 export type StylePreset = 'paper-cut';
-export type ContentMode = 'explainer' | 'book-review';
-export type AssetStrategy = 'layered' | 'scene-illustrations';
+export type ContentMode = 'explainer' | 'book';
+export type ContentModeInput = ContentMode | 'book-review';
+export type AssetStrategy = 'layered';
+
+export type MotionKeyframe = {
+  at: number;
+  x?: number;
+  y?: number;
+  rotation?: number;
+  scale?: number;
+  opacity?: number;
+};
+
+export type LayerMotion = {
+  action?: string;
+  keyframes?: MotionKeyframe[];
+  loop?: 'none' | 'bob' | 'sway' | 'pulse';
+};
 
 export type IllustrationLayer = {
   id: string;
+  assetId?: string;
   src: string;
   role: LayerRole;
   x: number;
@@ -26,6 +43,7 @@ export type IllustrationLayer = {
   shadow?: 'strong' | 'soft' | 'none';
   sfx?: string;
   sfxVolume?: number;
+  motion?: LayerMotion;
 };
 
 export type Camera = {
@@ -39,6 +57,8 @@ export type Camera = {
 
 export type Scene = {
   id: string;
+  storyBeatId?: string;
+  layerPlanRationale?: string;
   from: number;
   duration: number;
   hero?: boolean;
@@ -83,7 +103,7 @@ export type BookInfo = {
 
 export type Project = {
   title: string;
-  contentMode?: ContentMode;
+  contentMode?: ContentModeInput;
   assetStrategy?: AssetStrategy;
   stylePreset?: StylePreset;
   width: number;
@@ -98,14 +118,18 @@ export type Project = {
     gold: string;
   };
   brand?: {
-    handle: string;
+    handle?: string;
+    logo?: string | null;
     show?: boolean;
     placement?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    logoWidth?: number;
+    opacity?: number;
   };
   audio: {
     voice?: string | null;
     music?: string | null;
     musicVolume?: number;
+    tailSeconds?: number;
     intentionalSilence?: boolean;
   };
   book?: BookInfo;

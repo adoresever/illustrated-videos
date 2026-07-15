@@ -1,40 +1,101 @@
 {
-  "schemaVersion": 1,
-  "contentMode": "book-review",
+  "schemaVersion": 2,
+  "contentMode": "book",
+  "format": {
+    "displayName": "插画讲书",
+    "englishName": "illustrated book video"
+  },
   "book": {
     "title": "<replace-with-confirmed-title>",
     "originalTitle": "<replace-with-original-title-or-remove>",
     "author": "<replace-with-confirmed-author>",
-    "language": "<replace-with-original-language-or-remove>",
+    "originalLanguage": "<replace-with-original-language-or-remove>",
     "firstPublicationYear": null,
-    "edition": "<replace-with-edition-or-remove>",
-    "translator": "<replace-with-translator-or-remove>"
+    "edition": "<replace-with-edition-used-or-remove>",
+    "translator": "<replace-with-translator-for-this-edition-or-remove>"
   },
   "editorial": {
     "audience": "<replace-with-intended-viewer>",
-    "angle": "<replace-with-one-question-or-argument>",
-    "promise": "<replace-with-what-the-viewer-will-understand>",
-    "spoilerLevel": "low",
-    "tone": "<replace-with-spoken-and-visual-tone>"
-  },
-  "facts": [],
-  "interpretations": [],
-  "guardrails": {
-    "quotePolicy": "original-commentary-only",
-    "visualPolicy": {
-      "noCoverReplication": true,
-      "noAdaptationFramesOrLikenesses": true,
-      "noGeneratedTypography": true,
-      "noEditionStyleImitation": true
+    "angle": "<replace-with-one-defensible-angle>",
+    "tone": "<replace-with-spoken-and-visual-tone>",
+    "spoilerPolicy": {
+      "level": "low",
+      "allowedRange": "<replace-with-what-may-be-revealed>",
+      "blockedDetails": []
     },
-    "plotDetailsToAvoid": [],
-    "commonOversimplifications": [],
+    "quotePolicy": "original-commentary-only"
+  },
+  "researchExecution": {
+    "parallelPreferred": true,
+    "fallback": "sequential-same-tracks",
+    "tracks": [
+      {
+        "id": "canon",
+        "mission": "Verify work, edition, plot, character, and explicit appearance facts from primary or authorized sources."
+      },
+      {
+        "id": "context",
+        "mission": "Verify period, place, material culture, and visual context from authoritative archives."
+      },
+      {
+        "id": "critical",
+        "mission": "Find attributable interpretations, common oversimplifications, and conflicting accounts."
+      }
+    ],
+    "mergePolicy": {
+      "reopenUsedSources": true,
+      "deduplicateSourcesByCanonicalUrl": true,
+      "oneCheckableStatementPerClaim": true,
+      "unresolvedContradictionsBlockStoryUse": true
+    }
+  },
+  "sources": [],
+  "claims": [],
+  "contradictions": [],
+  "characterBible": {
+    "identityPolicy": {
+      "separateTimelineVariants": true,
+      "separateCanonFromCreativeDirection": true,
+      "noAdaptationLikenesses": true,
+      "noIllustratedEditionImitation": true
+    },
+    "characters": []
+  },
+  "storySpine": {
+    "centralQuestion": "<replace-with-the-question-that-organizes-the-story>",
+    "narrativePromise": "<replace-with-what-the-viewer-will-understand>",
+    "endingCondition": "Resolve or deliberately open the central question after every required beat has advanced the story.",
+    "narrationTiming": {
+      "durationRule": "ask-user-then-fit-approved-narration",
+      "preferenceSource": "fallback",
+      "requestedSeconds": null,
+      "planningTargetSeconds": null,
+      "planningRangeSeconds": [60, 120],
+      "finalAudioDeterminesRuntime": true
+    },
+    "beats": []
+  },
+  "layerContract": {
+    "backgroundPlatesExcludeFeaturedSubjects": true,
+    "charactersUseIndependentAlphaAssets": true,
+    "movingOrOccludingPropsUseIndependentLayers": true,
+    "foregroundDepthElementsUseIndependentLayers": true,
+    "generatedTextInRasterAssets": false
+  },
+  "guardrails": {
+    "sourcePolicy": {
+      "directUrlsOnly": true,
+      "searchSnippetsAreDiscoveryOnly": true,
+      "preciseTextFactMayUseOnePrimarySource": true,
+      "contextAndInterpretationPreferIndependentCorroboration": true
+    },
     "visualExclusions": [
       "book-cover replicas",
       "film stills or actor likenesses",
       "generated typography",
       "recognizable illustrated-edition compositions"
-    ]
-  },
-  "sources": []
+    ],
+    "commonOversimplifications": [],
+    "rightsNotes": []
+  }
 }

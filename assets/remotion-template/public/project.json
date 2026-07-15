@@ -1,10 +1,19 @@
 {
   "title": "插画科普视频",
+  "contentMode": "explainer",
+  "assetStrategy": "layered",
   "stylePreset": "paper-cut",
   "width": 1080,
   "height": 1920,
   "fps": 30,
-  "durationInFrames": 180,
+  "durationInFrames": 1200,
+  "durationPlan": {
+    "source": "fallback",
+    "requestedSeconds": null,
+    "planningTargetSeconds": 40,
+    "planningRangeSeconds": [35, 50],
+    "finalAudioDeterminesRuntime": true
+  },
   "palette": {
     "paper": "#F3EBD8",
     "ink": "#20251E",
@@ -13,13 +22,17 @@
   },
   "brand": {
     "handle": "",
+    "logo": null,
     "show": false,
-    "placement": "top-right"
+    "placement": "top-right",
+    "logoWidth": 96,
+    "opacity": 0.94
   },
   "audio": {
     "voice": null,
     "music": null,
     "musicVolume": 0.1,
+    "tailSeconds": 0,
     "intentionalSilence": false
   },
   "scenes": []

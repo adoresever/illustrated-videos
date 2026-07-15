@@ -4,8 +4,8 @@
 
 ```json
 {
-  "contentMode": "book-review",
-  "assetStrategy": "scene-illustrations",
+  "contentMode": "book",
+  "assetStrategy": "layered",
   "image": {
     "provider": "codex-native",
     "model": null,
@@ -36,7 +36,7 @@
 
 Use the current Codex image-generation tool. It does not require `OPENAI_API_KEY`. Current Codex documentation identifies built-in image generation as `gpt-image-2`; keep the provider value `codex-native` because the built-in tool, not this Skill, controls model parameters and usage accounting.
 
-Generate every distinct plate, subject, or scene illustration in a separate call. Copy chosen outputs into the project before rendering.
+Generate every distinct background, subject, prop, and foreground element in a separate call. Copy chosen outputs into the project before rendering. Do not ask the image model to combine a featured subject with its final environment.
 
 ### `openai-api`
 
@@ -51,7 +51,7 @@ node scripts/generate-openai-image.mjs \
   --quality medium
 ```
 
-GPT Image 2 does not provide native transparent output through this workflow. For `layered`, generate flat chroma-key subjects and remove the key locally. For `scene-illustrations`, request complete text-free plates and do not run chroma removal.
+GPT Image 2 does not provide native transparent output through this workflow. Generate opaque subjects on a flat chroma color absent from the subject, then remove the key locally and validate the resulting alpha channel.
 
 ### `mcp`
 
@@ -59,9 +59,30 @@ Inspect the current MCP tool schema before invoking it. Map the shared prompt, o
 
 ### `file`
 
-Use only when the user supplies authorized assets that match the declared strategy. For `layered`, require background plates and independently separated subject or foreground assets; a single composite illustration does not satisfy that contract. For `scene-illustrations`, accept original or licensed complete text-free plates. Copy inputs into `public/assets/source/`, derive the declared outputs, record `imageProvider: "file"`, and run the matching manifest validation. Run alpha validation only for assets declared as layers.
+Use only when the user supplies authorized assets that satisfy the layered contract: background plates without featured subjects plus independently separated subjects, props, or foreground assets. A single composite illustration does not satisfy the production contract, although it may be retained as a visual reference. Copy inputs into `public/assets/source/`, derive declared outputs, record `imageProvider: "file"`, and validate alpha on every declared layer.
 
 ## Voice providers
+
+### Voice discovery and user choice
+
+Do not present a raw provider ID list and expect the user to know how each entry sounds. For a provider with an enumerable catalog, first show three to five semantic cards containing a plain-language label, listening description, best uses, provider-declared gender and locale, the real voice ID, and a metadata-grounded reason for the recommendation.
+
+For Edge TTS, enumerate the current installed provider catalog dynamically:
+
+```bash
+node scripts/suggest-voices.mjs \
+  --provider edge-tts \
+  --locale zh-CN \
+  --mode explainer \
+  --max 4 \
+  --format markdown
+```
+
+The matcher reads `ContentCategories` and `VoicePersonalities` returned by `edge-tts --list-voices`, then applies generic mappings from `assets/voice-presets.json`. The mapping is editorial guidance, not a promise of an acoustic property beyond the provider metadata, and it is never tied to a particular title or topic. `--max` accepts 3–5. JSON is the default output; `--format markdown` is intended for showing choices directly to a user.
+
+For another provider, export its real configured catalog and pass `--catalog <file>`. Catalog JSON may be an array or `{\"voices\": [...]}` and may use normalized fields (`voiceId`, `locale`, `gender`, `contentCategories`, `voicePersonalities`) or provider fields (`ShortName` / `Name`, `Locale`, `Gender`, `ContentCategories`, `VoicePersonalities`). If enumeration or catalog parsing fails, the script returns a structured `catalog-required` framework with no recommendations. Never fill that gap with guessed voice IDs.
+
+Offer a same-text preview of the shortlist when practical. The user's selection wins. If they do not answer, use `defaultSelection`, which is always one of the actual catalog entries. Changing voice, rate, pitch, or approved wording requires new synthesis, decoded-duration measurement, and caption/scene alignment.
 
 ### `edge-tts`
 

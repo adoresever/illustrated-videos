@@ -19,10 +19,10 @@ ffmpeg -y -hide_banner -loglevel error \
   -f lavfi -i 'aevalsrc=0.08*sin(2*PI*110*t)+0.04*sin(2*PI*165*t):s=48000:d=1.1' \
   "$work/bgm.wav"
 
-"$root/scripts/mix-book-audio.sh" \
+"$root/scripts/mix-audio.sh" \
   --voice "$work/voice.wav" \
   --out "$work/voice-processed.wav"
-"$root/scripts/mix-book-audio.sh" \
+"$root/scripts/mix-audio.sh" \
   --voice "$work/voice.wav" \
   --bgm "$work/bgm.wav" \
   --bgm-start 0.2 \
@@ -42,9 +42,9 @@ cat >"$work/approved.json" <<'JSON'
 {
   "project": "offline-smoke",
   "cues": [
-    {"id": "hook", "text": "爱情，也会发烧吗？"},
-    {"id": "time", "text": "时间让答案慢慢显形。"},
-    {"id": "close", "text": "我们只问，不替你回答。"}
+    {"id": "hook", "sceneId": "scene-1", "text": "爱情，也会发烧吗？"},
+    {"id": "time", "sceneId": "scene-2", "text": "时间让答案慢慢显形。"},
+    {"id": "close", "sceneId": "scene-3", "text": "我们只问，不替你回答。"}
   ]
 }
 JSON
@@ -95,6 +95,7 @@ with open(sys.argv[2], encoding="utf-8") as handle:
 
 assert aligned["project"] == "offline-smoke"
 assert [cue["text"] for cue in aligned["cues"]] == [cue["text"] for cue in approved["cues"]]
+assert [cue["sceneId"] for cue in aligned["cues"]] == [cue["sceneId"] for cue in approved["cues"]]
 assert aligned["alignment"]["textAuthority"] == "approved"
 assert aligned["alignment"]["source"] == "timing-json"
 assert aligned["cues"][0]["start"] == 0.12
@@ -106,6 +107,60 @@ for cue in aligned["cues"]:
     assert cue["start"] >= previous_end
     previous_end = cue["end"]
 PY
+
+cat >"$work/project.json" <<'JSON'
+{
+  "fps": 30,
+  "durationInFrames": 90,
+  "captions": [],
+  "scenes": [
+    {"id": "scene-1", "from": 0, "duration": 30},
+    {"id": "scene-2", "from": 30, "duration": 30},
+    {"id": "scene-3", "from": 60, "duration": 30}
+  ]
+}
+JSON
+node "$root/scripts/apply-caption-timings.mjs" \
+  --aligned "$work/aligned.json" \
+  --project "$work/project.json" \
+  --tail-seconds 0.35 >"$work/apply-report.json"
+python3 - "$work/project.json" "$work/apply-report.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    project = json.load(handle)
+with open(sys.argv[2], encoding="utf-8") as handle:
+    report = json.load(handle)
+
+assert report["updatedScenes"] is True
+assert len(project["captions"]) == 3
+assert project["scenes"][0]["from"] == 0
+for previous, current in zip(project["scenes"], project["scenes"][1:]):
+    assert previous["from"] + previous["duration"] == current["from"]
+assert project["scenes"][-1]["from"] + project["scenes"][-1]["duration"] == project["durationInFrames"]
+PY
+
+python3 - "$work/aligned.json" "$work/aligned-without-scenes.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    aligned = json.load(handle)
+for cue in aligned["cues"]:
+    cue.pop("sceneId", None)
+with open(sys.argv[2], "w", encoding="utf-8") as handle:
+    json.dump(aligned, handle)
+PY
+cat >"$work/project-with-stale-scenes.json" <<'JSON'
+{"fps":30,"durationInFrames":90,"scenes":[{"id":"scene-1","from":0,"duration":90}]}
+JSON
+if node "$root/scripts/apply-caption-timings.mjs" \
+  --aligned "$work/aligned-without-scenes.json" \
+  --project "$work/project-with-stale-scenes.json" >/dev/null 2>&1; then
+  echo "Aligned cues without sceneId were not rejected for a non-empty scene timeline." >&2
+  exit 1
+fi
 
 cat >"$work/empty-approved.json" <<'JSON'
 {"cues": [{"id": "bad", "text": "   "}]}
